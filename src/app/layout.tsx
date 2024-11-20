@@ -4,9 +4,11 @@ import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
 
 import "./globals.css";
+import ReactQueryProvider from "@/lib/react-query";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
-  title: "Opal",
+  title: "AI StreamCraft",
   description: "Share AI power videos with your friends",
 };
 
@@ -26,7 +28,10 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {children}
+            <ReactQueryProvider>
+              {children}
+              <Toaster />
+            </ReactQueryProvider>
           </ThemeProvider>
         </body>
       </html>
