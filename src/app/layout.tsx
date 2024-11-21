@@ -6,6 +6,7 @@ import { DM_Sans } from "next/font/google";
 import "./globals.css";
 import ReactQueryProvider from "@/lib/react-query";
 import { Toaster } from "sonner";
+import { ReduxProvider } from "@/redux/provider";
 
 export const metadata: Metadata = {
   title: "AI StreamCraft",
@@ -28,10 +29,12 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <ReactQueryProvider>
-              {children}
-              <Toaster />
-            </ReactQueryProvider>
+            <ReduxProvider>
+              <ReactQueryProvider>
+                {children}
+                <Toaster />
+              </ReactQueryProvider>
+            </ReduxProvider>
           </ThemeProvider>
         </body>
       </html>

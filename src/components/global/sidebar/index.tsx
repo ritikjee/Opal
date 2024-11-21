@@ -1,6 +1,8 @@
 "use client";
 
+import { getNotifications } from "@/actions/user";
 import { getWorkSpaces } from "@/actions/workspace";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -11,17 +13,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { MENU_ITEMS } from "@/constants";
 import { useQueryData } from "@/hooks/use-query-data";
-import { WorkspaceProps } from "@/types/index.type";
-import { PlusCircle, Sparkles } from "lucide-react";
+import { NotificationProps, WorkspaceProps } from "@/types/index.type";
+import { Menu, PlusCircle, Sparkles } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
+import GlobalCard from "../global-card";
 import Modal from "../modal";
+import Search from "../search-users";
 import SidebarItem from "./sidebar-item";
 import WorkspacePlaceholder from "./workspace-placeholder";
-import { getNotifications } from "@/actions/user";
-import GlobalCard from "../global-card";
-import SearchWorkspace from "../search-users";
-import Search from "../search-users";
+import InfoBar from "@/components/info-bar";
+import { useDispatch } from "react-redux";
+import { WORKSPACES } from "@/redux/slices/workspaces";
 
 type Props = {
   activeWorkspaceId: string;
@@ -30,6 +35,7 @@ type Props = {
 function Sidebar({ activeWorkspaceId }: Props) {
   const router = useRouter();
   const pathName = usePathname();
+  const dispatch = useDispatch();
 
   const { data, isFetched } = useQueryData(["user-workspaces"], getWorkSpaces);
   const { data: notifications } = useQueryData(
@@ -38,6 +44,9 @@ function Sidebar({ activeWorkspaceId }: Props) {
   );
 
   const { data: workspace } = data as WorkspaceProps;
+  const { data: count } = notifications as NotificationProps;
+
+  const menuItems = MENU_ITEMS(activeWorkspaceId);
 
   const onChangeActiveWorkspace = (value: string) => {
     router.push(`/dashboard/${value}`);
@@ -47,7 +56,11 @@ function Sidebar({ activeWorkspaceId }: Props) {
     (s) => s.id === activeWorkspaceId
   );
 
-  return (
+  if (isFetched && workspace) {
+    dispatch(WORKSPACES({ workspaces: workspace.workspace }));
+  }
+
+  const SidebarSection = (
     <div className="bg-[#111111] flex-none relative p-4 h-full w-[250px] flex flex-col gap-4 items-center overflow-hidden">
       <div className="bg-[#111111] p-4 flex gap-2 justify-center items-center mb-4 absolute top-0 left-0 right-0 ">
         <Sparkles className="h-6 w-6 text-primary" />
@@ -107,7 +120,25 @@ function Sidebar({ activeWorkspaceId }: Props) {
           </Modal>
         )}
       <p className="w-full text-[#9D9D9D] font-bold mt-4">Menu</p>
-
+      <nav className="w-full">
+        <ul>
+          {menuItems.map((item) => (
+            <SidebarItem
+              href={item.href}
+              icon={item.icon}
+              selected={pathName === item.href}
+              title={item.title}
+              key={item.title}
+              notifications={
+                (item.title === "Notifications" &&
+                  count._count &&
+                  count._count.notification) ||
+                0
+              }
+            />
+          ))}
+        </ul>
+      </nav>
       <Separator className="w-4/5" />
       <p className="w-full text-[#9D9D9D] font-bold mt-4 ">Workspaces</p>
 
@@ -166,6 +197,25 @@ function Sidebar({ activeWorkspaceId }: Props) {
           footer={<></>}
         />
       )}
+    </div>
+  );
+
+  return (
+    <div className="full">
+      <InfoBar />
+      <div className="md:hidden fixed my-4">
+        <Sheet>
+          <SheetTrigger asChild className="ml-2">
+            <Button variant={"ghost"} className="mt-[2px]">
+              <Menu />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side={"left"} className="p-0 w-fit h-full">
+            {SidebarSection}
+          </SheetContent>
+        </Sheet>
+      </div>
+      <div className="md:block hidden h-full">{SidebarSection}</div>
     </div>
   );
 }

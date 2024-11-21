@@ -10,8 +10,6 @@ async function DashBoardPage() {
   } else {
     redirect(`/auth/sign-in`);
   }
-
-  return <div>DashBoardPage</div>;
 }
 
 export default DashBoardPage;
